@@ -42,9 +42,7 @@ MsgBox, Shits Fucked, Unable to locate Password Database Contact SuperUser For A
 
 
 
-setTimer, windowwatchrue, 50
-#persistent
-return
+
 
 DailyPassLogin_key:
 {

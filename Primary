@@ -1,0 +1,216 @@
+#SingleInstance force
+#UseHook
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+;#MaxThreadsPerHotkey
+#Warn  ; Enable warnings to assist with detecting common errors.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
+setTimer, windowwatchrue, 50
+#persistent
+
+FormatTime, Current, ddMMyyyy, ShortDate
+
+FileSelectFile, Passwordfile, 3,PWDatabase.txt , Select PWDatabase Directory.,Text Document(*.txt)
+if (Passwordfile = "")
+{	 ;*[Rue_Aptos_Daily_Password_Working]
+MsgBox,, Password Bot, Program Aborted Contact SuperUser For Assistance
+		IfMsgBox Ok
+			ExitApp
+   				return  ; This will exit in this case.
+}
+
+
+if FileExist(Passwordfile)
+{
+MsgBox,, Password Bot, Database Successfully Loaded
+MsgBox, 4, Password Bot, Is the Displayed Date Correct? %Current%
+	IfMsgBox Yes
+		MsgBox,, Password Bot, Date Successfully Confirmed - Script Launched
+			IfMsgBox Ok
+				return
+					IfMsgBox No
+						MsgBox,, Password Bot, Program Aborted Contact SuperUser For Assistance
+							ExitApp
+}
+	else
+{
+MsgBox, Shits Fucked, Unable to locate Password Database Contact SuperUser For Assistance
+	IfMsgBox Ok
+		ExitApp
+}
+
+
+
+setTimer, windowwatchrue, 50
+#persistent
+return
+
+DailyPassLogin_key:
+{
+
+
+PasswordCount := 0
+	Loop, read, %Passwordfile%,
+{
+    PasswordSearchString := A_LoopReadLine
+		Gosub, PasswordSearch
+}
+;MsgBox %PasswordCount% Passwords found ;used to test if command is pulling
+	return
+
+
+PasswordSearch:
+; String:
+	PasswordStart1 := InStr(PasswordSearchString, Current)
+
+
+; Find the left-most starting position:
+PasswordStart := PasswordStart1  ; Set starting default.
+Loop
+{
+    ; It helps performance (at least in a script with many variables) to resolve
+    ; "PasswordStart%A_Index%" only once:
+    ArrayElement := PasswordStart%A_Index%
+    if (ArrayElement = "")  ; End of the pseudo-array has been reached.
+        break
+    if (ArrayElement = 0)  ; This element is disqualified.
+        continue
+    if (PasswordStart = 0)
+        PasswordStart := ArrayElement
+    else ; PasswordStart has a valid position in it, so compare it with ArrayElement.
+    {
+        if (ArrayElement != 0)
+            if (ArrayElement < PasswordStart)
+                PasswordStart := ArrayElement
+    }
+}
+
+if (PasswordStart = 0)  ; No Matching Dates Exist in PasswordSearchString.
+    return
+
+; Otherwise, extract this Password:
+Password := SubStr(PasswordSearchString, PasswordStart)  ; Omit the beginning/irrelevant part.
+StringReplace, Passwordreplace, Password,%Current%,, All
+Loop, parse, Passwordreplace,%A_Tab%%A_Space%<>,-
+;Find the first space, tab, or angle (if any), then filters out date and only outputs password.
+{
+	Password := A_LoopField
+	send %Password%
+	break  ; i.e. perform only one loop iteration to fetch the first "field".
+}
+
+return
+}
+
+
+reloadscript_key:
+{
+Reload
+return
+}
+
+killscript_key:
+{
+ExitApp
+return
+}
+
+killpos_key:
+{
+send, #r
+sleep 1000
+send, taskkill /f /im nsb.pos.client.exe	
+sleep 500
+send {Enter}
+sleep 100
+return
+}
+
+killdesktop_key:
+{
+	send, #r
+	sleep 1000
+	send, taskkill /f /im nsb.desktop.client.exe
+	sleep 500
+	send {Enter}
+	sleep 100	
+return
+}
+
+launchpos_key:
+{
+	send, #r
+	sleep 1000
+	send, nsb.pos.client.exe	
+	sleep 500
+	send {Enter}
+	sleep 100	
+return
+}
+
+launchdesktop_key:
+{
+	send, #r
+	sleep 1000
+	send, nsb.desktop.client.exe	
+	sleep 500
+	send {Enter}
+	sleep 100	
+return
+}
+
+launchshell_key:
+{
+	send, #r
+	sleep 1000
+	send, nsb.shell.exe	
+	sleep 500
+	send {Enter}
+	sleep 100	
+return
+}
+
+reloadscriptt_key:
+{
+reload
+}
+
+
+;5below commands
+
+TooltipClear:
+; just a routine to turn off tooltip after x milliseconds
+tooltip
+settimer, TooltipClear, off
+Return
+
+windowwatchrue:
+ifwinactive ahk_class TscShellContainerClass
+{
+	hotkey !numpad0, DailyPassLogin_key, on
+	hotkey !numpad1, reloadscript_key, on
+	hotkey !numpad2, killscript_key, on
+	hotkey !numpad3, killpos_key, on
+	hotkey !Numpad4, killdesktop_key, on
+	hotkey !Numpad5, launchpos_key, on
+	hotkey !Numpad6, launchdesktop_key, on
+	hotkey !Numpad7, launchshell_key, on
+	hotkey !^R, reloadscriptt_key, on
+}
+else
+{
+	hotkey !numpad0, DailyPassLogin_key, off
+	hotkey !numpad1, reloadscript_key, off
+	hotkey !numpad2, killscript_key, off
+	hotkey !numpad3, killpos_key, off
+	hotkey !Numpad4, killdesktop_key, off
+	hotkey !Numpad5, launchpos_key, off
+	hotkey !Numpad6, launchdesktop_key, off
+	hotkey !Numpad7, launchshell_key, off
+	hotkey ^!R, reloadscriptt_key, on
+}
+
+
+
+return

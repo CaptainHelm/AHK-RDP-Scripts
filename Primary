@@ -7,7 +7,9 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 setTimer, windowwatchrue, 50
+setTimer, windowWatch, 500
 #persistent
+
 
 FormatTime, Current, ddMMyyyy, ShortDate
 
@@ -41,7 +43,27 @@ MsgBox, Shits Fucked, Unable to locate Password Database Contact SuperUser For A
 }
 
 
+windowWatch:
+if WinActive("ahk_class TscShellContainerClass") {
+	if (!active) {
+		active := true
+      ; Short sleep to make sure remote desktop's hook is in place first
+		Sleep 50
+      ; Coming out of suspend mode recreates the keyboard hook, giving
+      ; our hook priority over the remote desktop client's.
+		suspend off
+	}
+} else {
+	active := false
+	suspend on
+}
+return
 
+^+CapsLock::
+  ; Need a short sleep here for focus to restore properly.
+Sleep 50
+WinMinimize ahk_class TscShellContainerClass
+return
 
 
 DailyPassLogin_key:
@@ -169,11 +191,6 @@ launchshell_key:
 return
 }
 
-reloadscriptt_key:
-{
-reload
-}
-
 
 ;5below commands
 
@@ -185,6 +202,7 @@ Return
 
 windowwatchrue:
 ifwinactive ahk_class TscShellContainerClass
+
 {
 	hotkey !numpad0, DailyPassLogin_key, on
 	hotkey !numpad1, reloadscript_key, on
@@ -194,7 +212,6 @@ ifwinactive ahk_class TscShellContainerClass
 	hotkey !Numpad5, launchpos_key, on
 	hotkey !Numpad6, launchdesktop_key, on
 	hotkey !Numpad7, launchshell_key, on
-	hotkey !^R, reloadscriptt_key, on
 }
 else
 {
@@ -206,7 +223,6 @@ else
 	hotkey !Numpad5, launchpos_key, off
 	hotkey !Numpad6, launchdesktop_key, off
 	hotkey !Numpad7, launchshell_key, off
-	hotkey ^!R, reloadscriptt_key, on
 }
 
 
